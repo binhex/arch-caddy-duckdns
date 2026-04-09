@@ -1,0 +1,100 @@
+{
+    http_port 8080
+    https_port 8443
+}
+
+(block_world) {
+    @block not remote_ip private_ranges
+    abort @block
+}
+
+(security_headers) {
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains;"
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin"
+        X-Robots-Tag "noindex, nofollow, nosnippet, noarchive"
+    }
+}
+
+(log_settings) {
+    log {
+        output file /config/caddy/logs/access.log
+        level WARN
+    }
+}
+
+# Default http file server
+:8080 {
+    import log_settings
+    root * /config/caddy/www
+    file_server
+    import block_world
+}
+
+# Example reverse proxy duckdns using sub domains
+#########
+
+#overseerr.mydomain.duckdns.org {
+#    import security_headers
+#    tls {
+#        dns duckdns {env.DUCKDNS_TOKEN}
+#    }
+#    reverse_proxy  host-ip:5055
+#}
+#sonarr.mydomain.duckdns.org {
+#    import security_headers
+#    tls {
+#        dns duckdns {env.DUCKDNS_TOKEN}
+#    }
+#    reverse_proxy  host-ip:8989
+#}
+#radarr.mydomain.duckdns.org {
+#    import security_headers
+#    tls {
+#        dns duckdns {env.DUCKDNS_TOKEN}
+#    }
+#    reverse_proxy  host-ip:7878
+#}
+
+# Example reverse proxy duckdns using root base url
+#########
+
+#mydomain.duckdns.org:8443 {
+#    import security_headers
+#
+#    tls {
+#        dns duckdns {env.DUCKDNS_TOKEN}
+#    }
+#
+#    reverse_proxy host-ip:5055
+#}
+
+# Example reverse proxy duckdns using app base url
+#########
+
+#mydomain.duckdns.org:8443 {
+#    import security_headers
+#
+#    tls {
+#        dns duckdns {env.DUCKDNS_TOKEN}
+#    }
+#
+#    handle /overseerr/* {
+#        reverse_proxy host-ip:5055
+#    }
+#
+#    handle /sonarr/* {
+#        reverse_proxy  host-ip:8989
+#    }
+#
+#    handle /radarr/* {
+#        reverse_proxy  host-ip:7878
+#    }
+#
+#    # catch-all
+#    handle {
+#        respond "Not Found" 404
+#    }
+#}
