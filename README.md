@@ -90,9 +90,10 @@ docker run -d \
 ## Notes
 
 - Your DuckDNS token can be found by logging into [DuckDNS](https://www.duckdns.org/).
-- Caddy stores Let's Encrypt account data and certificates under `/home/nobody/.local/share/caddy/`
-    inside the container — ensure `/config` is mapped to a persistent volume to avoid
-    re-registration on restart.
+- Caddy stores Let's Encrypt account data and certificates under `/config/caddy/data/` — this
+    path sits inside the `/config` bind mount, so certs survive container recreation without
+    hitting Let's Encrypt rate limits. If you have an existing deployment, add
+    `storage file_system /config/caddy/data` to the global options block of your Caddyfile.
 - The admin API endpoint on port `2019` is optional; it allows runtime configuration via the
     [Caddy API](https://caddyserver.com/docs/api).
 - Logs are written to `/config/caddy/logs/access.log`.

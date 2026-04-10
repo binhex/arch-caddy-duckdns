@@ -9,6 +9,7 @@ fi
 caddy_install_path="/opt/caddy"
 config_root="/config/caddy"
 config_path="${config_root}/config"
+data_path="${config_root}/data"
 www_path="${config_root}/www"
 www_filepath="${config_root}/www/index.html"
 caddy_config_filepath="${config_path}/Caddyfile"
@@ -18,6 +19,7 @@ logs_path="${config_root}/logs"
 mkdir -p \
 	"${config_root}" \
 	"${config_path}" \
+	"${data_path}" \
 	"${www_path}" \
 	"${logs_path}"
 
