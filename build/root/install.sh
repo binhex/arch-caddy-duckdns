@@ -36,21 +36,55 @@ echo -e "export APPNAME=${APPNAME}\nexport IMAGE_RELEASE_TAG=${RELEASETAG}\n" >>
 # ensure we have the latest builds scripts
 refresh.sh
 
-# custom
+
+# pacman packages
+####
+
+# define pacman packages
+pacman_packages="go"
+
+# install compiled packages using pacman
+if [[ -n "${pacman_packages}" ]]; then
+	# arm64 currently targetting aor not archive, so we need to update the system first
+	if [[ "${TARGETARCH}" == "arm64" ]]; then
+		pacman -Syu --noconfirm
+	fi
+	pacman -S --needed $pacman_packages --noconfirm
+fi
+
+# github
+####
+
+download_path="/tmp/xcaddy"
+install_path="/opt/xcaddy"
+
+mkdir -p "${download_path}" "${install_path}"
+
+# binary asset download
+gh.sh --github-owner caddyserver --github-repo xcaddy --download-type release --release-type binary --download-path "${download_path}" --asset-regex "xcaddy.*linux_${TARGETARCH}.tar.gz"
+
+# unpack to install path
+tar -xvf "${download_path}/"*.tar.gz -C "${install_path}"
+
+# custom - xcaddy
 ####
 
 install_path="/opt/caddy"
 
 mkdir -p "${install_path}"
 
-# download statically built caddy binary with duckdns plugin from binhex packages repo
-curl -o "${install_path}/caddy" -L "https://github.com/binhex/packages/raw/refs/heads/main/static/${TARGETARCH}/caddy/caddy_linux_${TARGETARCH}_duckdns"
+# xcaddy builds in cwd
+cd "${install_path}"
+
+# build caddy with duckdns plugin using xcaddy
+/opt/xcaddy/xcaddy build \
+	--with github.com/caddy-dns/duckdns
 
 # container perms
 ####
 
 # define comma separated list of paths
-install_paths="/opt/caddy,/home/nobody"
+install_paths="/opt/caddy,/opt/xcaddy,/home/nobody"
 
 # split comma separated string into list for install paths
 IFS=',' read -ra install_paths_list <<< "${install_paths}"
