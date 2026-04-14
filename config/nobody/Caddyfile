@@ -21,17 +21,23 @@
 
 (log_settings) {
     log {
-        output file /config/caddy/logs/access.log
-        level WARN
+        hostnames {args[0]}
+        level DEBUG
+        output file /config/caddy/logs/{args[0]}.log {
+            roll_at 00:00
+            roll_size 10mb
+            roll_keep 5
+            roll_keep_for 720h
+        }
     }
 }
 
 # Default http file server
 :8080 {
-    import log_settings
+    import log_settings mydomain.duckdns.org.8080
+    import block_world
     root * /config/caddy/www
     file_server
-    import block_world
 }
 
 # Example reverse proxy duckdns using sub domains
@@ -39,6 +45,7 @@
 
 #overseerr.mydomain.duckdns.org {
 #    import security_headers
+#    import log_settings overseerr.mydomain.duckdns.org.5055
 #    tls {
 #        dns duckdns {env.DUCKDNS_TOKEN}
 #    }
@@ -46,6 +53,7 @@
 #}
 #sonarr.mydomain.duckdns.org {
 #    import security_headers
+#    import log_settings sonarr.mydomain.duckdns.org.8989
 #    tls {
 #        dns duckdns {env.DUCKDNS_TOKEN}
 #    }
@@ -53,6 +61,7 @@
 #}
 #radarr.mydomain.duckdns.org {
 #    import security_headers
+#    import log_settings radarr.mydomain.duckdns.org.7878
 #    tls {
 #        dns duckdns {env.DUCKDNS_TOKEN}
 #    }
@@ -64,6 +73,7 @@
 
 #mydomain.duckdns.org:8443 {
 #    import security_headers
+#    import log_settings mydomain.duckdns.org.5055
 #
 #    tls {
 #        dns duckdns {env.DUCKDNS_TOKEN}
@@ -83,15 +93,18 @@
 #    }
 #
 #    handle /overseerr/* {
+#        import log_settings mydomain.duckdns.org.overseerr.5055
 #        reverse_proxy host-ip:5055
 #    }
 #
 #    handle /sonarr/* {
 #        reverse_proxy  host-ip:8989
+#        import log_settings mydomain.duckdns.org.sonarr.8989
 #    }
 #
 #    handle /radarr/* {
 #        reverse_proxy  host-ip:7878
+#        import log_settings mydomain.duckdns.org.radarr.7878
 #    }
 #
 #    # catch-all
