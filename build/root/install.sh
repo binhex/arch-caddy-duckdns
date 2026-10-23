@@ -56,27 +56,21 @@ fi
 ####
 
 download_path="/tmp/xcaddy"
-install_path="/opt/xcaddy"
+caddy_install_path="/opt/caddy"
+xcaddy_install_path="/opt/xcaddy"
 
-mkdir -p "${download_path}" "${install_path}"
+mkdir -p "${download_path}" "${caddy_install_path}" "${xcaddy_install_path}"
 
-# binary asset download
-gh.sh --github-owner caddyserver --github-repo xcaddy --download-type release --release-type binary --download-path "${download_path}" --asset-regex "xcaddy.*linux_${TARGETARCH}.tar.gz"
-
-# unpack to install path
-tar -xvf "${download_path}/"*.tar.gz -C "${install_path}"
+# download xcaddy binary
+github.sh --install-path "${xcaddy_install_path}" --github-owner 'caddyserver' --github-repo 'xcaddy' --download-assets "xcaddy.*linux_${TARGETARCH}.tar.gz" --query-type 'release'
 
 # custom - xcaddy
 ####
 
-install_path="/opt/caddy"
+# xcaddy builds in cwd, thus we switch to the caddy install path
+cd "${caddy_install_path}"
 
-mkdir -p "${install_path}"
-
-# xcaddy builds in cwd
-cd "${install_path}"
-
-# build caddy with duckdns plugin using xcaddy
+# build caddy using xcaddy with duckdns plugin
 /opt/xcaddy/xcaddy build \
 	--with github.com/caddy-dns/duckdns
 
@@ -84,7 +78,7 @@ cd "${install_path}"
 ####
 
 # define comma separated list of paths
-install_paths="/opt/caddy,/opt/xcaddy,/home/nobody"
+install_paths="${xcaddy_install_path},${caddy_install_path},/home/nobody"
 
 # split comma separated string into list for install paths
 IFS=',' read -ra install_paths_list <<< "${install_paths}"
